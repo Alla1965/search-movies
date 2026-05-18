@@ -1,0 +1,20 @@
+.errorMessage {
+  font-size: 24px;
+  margin: 24px 24px 0px 40px;
+}
+.inputSearch {
+  width: 300px;
+  height: 60px;
+  height: 40px;
+  margin: 0px 12px 0px 40px;
+  background-color: white;
+  font-size: 24px;
+  padding-left: 20px;
+}
+.titleSearch {
+  margin-left: 40px;
+}
+.btnSearch {
+  font-size: 16px;
+  height: 45px;
+}

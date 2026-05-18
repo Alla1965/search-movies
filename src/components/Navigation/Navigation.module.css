@@ -1,0 +1,25 @@
+.nav {
+  display: flex;
+  width: 1600px;
+  gap: 20px;
+  padding: 40px;
+  margin-left: 40px;
+  background-color: white;
+  box-shadow: rgb(246, 242, 242) 60px;
+  box-shadow: 5px 5px 10px grey;
+}
+
+.link {
+  display: flex;
+  color: white;
+  font-size: 24px;
+  text-decoration: none;
+  font-weight: bold;
+  color: black;
+  column-gap: 40px;
+}
+
+.active {
+  color: orange;
+  text-decoration: underline;
+}
