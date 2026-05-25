@@ -1,4 +1,4 @@
-     import MovieList from '../components/MovieList/MovieList.jsx';
+     import MovieList from '../components/MovieList';
         
         const MoviesModal = ({ movies, 
           location, 

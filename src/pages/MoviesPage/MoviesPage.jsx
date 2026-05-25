@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { searchMovies } from '../../services/tmdbAPI';
-// import { getMoviesByCountry } from '../../services/tmdbAPI';
 import { getCountries } from '../../services/tmdbAPI';
-import MovieList from '../../components/MovieList/MovieList';
+import MovieList from '../../components/MovieList';
 import NotFoundPage from '../NotFoundPage/NotFoundPage';
 import MoviesModal from '../../components/MoviesModal';
 import TitleSearchForm from '../../components/TitleSearchForm';
@@ -20,32 +19,21 @@ const MoviesPage = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  // работа с параметрами в адресной строке.
   const [searchParams, setSearchParams] = useSearchParams();
-  
   const query = searchParams.get('query') || '';
   const country = searchParams.get('country') || '';
   const genre = searchParams.get('genre') || '';
-  
   const filteredCountries = countries.filter(country => {
   const countryName = country.english_name || '';
   const searchText = countrySearch || '';
 
-  return countryName.toLowerCase().includes(searchText.toLowerCase());
-});
+  return countryName.toLowerCase().includes(searchText.toLowerCase());});
 
   const [titleValue, setTitleValue] = useState('');
- 
-  // errorMessage — текст ошибки.
   const [errorMessage, setErrorMessage] = useState(null); // тільки одне джерело помилки
-
-  // isModalOpen — открыто ли модальное окно.
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [isCountryListOpen, setIsCountryListOpen] = useState(false);
-    
   const location = useLocation();
-
   const [genres, setGenres] = useState([]);
   const [genreValue, setGenreValue] = useState('');
 
@@ -116,18 +104,19 @@ const MoviesPage = () => {
   }, [country, genre]);
 
   // Загрузка списка стран
-  useEffect(() => {
-  getCountries()
+    useEffect(() => {
+     getCountries()
     .then(({ data }) => {
        setCountries(data);
     })
     .catch(error => {
       console.error('Error loading countries:', error.message);
     });
-}, []);
+    }, []);
 
-useEffect(() => {
-  getGenres()
+// Загрузка жанров
+   useEffect(() => {
+     getGenres()
     .then(({ data }) => {
       setGenres(data.genres);
     })
@@ -135,74 +124,75 @@ useEffect(() => {
       console.error('Error loading genres:', error.message);
     });
 }, []);
+
 // Эта функция запускается, когда пользователь нажимает кнопку Search или Enter в поле поиска.
-
-  const handleTitleSubmit = e => {
+    const handleTitleSubmit = e => {
      e.preventDefault();
-     console.log('Нажата кнопка Title Search');
-  const trimmedQuery = titleValue.trim();
-setCountrySearch('');
-setGenreValue('');
-setIsCountryListOpen(false);
-  if (trimmedQuery) {
-    setSearchParams({ query: trimmedQuery });
-  }
-  if (trimmedQuery === query && movies.length > 0) {
-  setIsModalOpen(true);
-  return;
-}
-};
+      const trimmedQuery = titleValue.trim();
+      setCountrySearch('');
+      setGenreValue('');
+      setIsCountryListOpen(false);
 
-  const handleCountrySubmit = e => {
-  e.preventDefault();
+      if (trimmedQuery) {
+         setSearchParams({ query: trimmedQuery });
+      }
 
-    const countryName = countrySearch.trim();
+      if (trimmedQuery === query && movies.length > 0) {
+         setIsModalOpen(true);
+      return;
+     }
+     };
 
-  let countryCode = '';
+    const handleCountrySubmit = e => {
+         e.preventDefault();
 
-if (countryName) {
-  const selectedCountry = countries.find(
-    country => country.english_name === countryName
-  );
+         const countryName = countrySearch.trim();
 
-    if (!selectedCountry) {
-    setErrorMessage('Please select a country from the list.');
-    return;
-  }
-   countryCode = selectedCountry.iso_3166_1;
-}
+         let countryCode = '';
 
-if (!countryCode && !genreValue) {
-  setErrorMessage('Please select a country or genre.');
-  return;
-}
+         if (countryName) {
+           const selectedCountry = countries.find(
+             country => country.english_name === countryName
+           );
 
-const params = {};
+            if (!selectedCountry) {
+            setErrorMessage('Please select a country from the list.');
+            return;
+          }
+         countryCode = selectedCountry.iso_3166_1;
+         }
 
-  if (countryCode) {
-    params.country = countryCode;
-  }
+         if (!countryCode && !genreValue) {
+           setErrorMessage('Please select a country or genre.');
+           return;
+         }
 
-  if (genreValue) {
-    params.genre = genreValue;
-  }
+         const params = {};
 
- if (countryCode === country && genreValue === genre && movies.length > 0) {
-    setIsModalOpen(true);
-     return;
-  }
-  setIsCountryListOpen(false);
-  console.log('FILTER submit', params);
-  setTitleValue('');
-   setSearchParams(params);
+                  if (countryCode) {
+            params.country = countryCode;
+          }
 
- };
+          if (genreValue) {
+            params.genre = genreValue;
+          }
+
+          if (countryCode === country && genreValue === genre && movies.length > 0) {
+             setIsModalOpen(true);
+              return;
+           }
+
+          setIsCountryListOpen(false);
+          setTitleValue('');
+          setSearchParams(params);
+
+     };
  
 const handleSeeMore = () => {
   const nextPage = currentPage + 1;
 
-  if (query) {
-    searchMovies(query, nextPage)
+   if (query) {
+     searchMovies(query, nextPage)
       .then(({ data }) => {
         setMovies(previousMovies => [...previousMovies, ...data.results]);
         setCurrentPage(data.page);
@@ -212,10 +202,10 @@ const handleSeeMore = () => {
       });
 
     return;
-  }
+    }
 
-  if (country || genre) {
-    getMoviesByFilters({
+   if (country || genre) {
+      getMoviesByFilters({
       countryCode: country,
       genreId: genre,
       page: nextPage,
@@ -249,7 +239,6 @@ const handleCountryClear = () => {
   setIsCountryListOpen(false);
   setGenreValue('');
 };
-
 
   return (
     <div className='mx-10 mb-10'>
@@ -292,8 +281,7 @@ const handleCountryClear = () => {
                         currentPage={currentPage}
                         onSeeMore={handleSeeMore} 
                          onClose={() => setIsModalOpen(false)}
-                        />
-                        
+          />              
         )}
      
     </div>
