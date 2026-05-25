@@ -9,22 +9,20 @@
   border-radius: 8px;
   margin: 8px auto 8px 40px;
 }
-.movieContainer {
+/* .movieContainer {
   display: flex;
   margin-left: 40px;
   max-height: 450px;
   font-size: 16px;
-}
-.movieProperty {
+} */
+/* .movieProperty {
   margin-left: 24px;
   width: 800px;
-}
-.movieTitle {
-  font-size: 40px;
-}
-.addInfo {
+} */
+
+/* .addInfo {
   margin: 12px auto 12px 40px;
-}
-.addItem {
+} */
+/* .addItem {
   font-size: 20px;
-}
+} */

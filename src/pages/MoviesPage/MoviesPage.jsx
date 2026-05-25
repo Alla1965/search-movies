@@ -1,67 +1,301 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { searchMovies } from '../../services/tmdbAPI';
+// import { getMoviesByCountry } from '../../services/tmdbAPI';
+import { getCountries } from '../../services/tmdbAPI';
 import MovieList from '../../components/MovieList/MovieList';
 import NotFoundPage from '../NotFoundPage/NotFoundPage';
-import css from "./MoviesPage.module.css"
-
+import MoviesModal from '../../components/MoviesModal';
+import TitleSearchForm from '../../components/TitleSearchForm';
+import CountrySearchForm from '../../components/CountrySearchForm'
+import { getMoviesByFilters } from '../../services/tmdbAPI';
+import { getGenres } from '../../services/tmdbAPI';
 
 const MoviesPage = () => {
+
+// movies — список найденных фильмов.
   const [movies, setMovies] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [countrySearch, setCountrySearch] = useState('');
+  const [totalResults, setTotalResults] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  // работа с параметрами в адресной строке.
   const [searchParams, setSearchParams] = useSearchParams();
- const [errorMessage, setErrorMessage] = useState(null); // тільки одне джерело помилки
- 
+  
   const query = searchParams.get('query') || '';
+  const country = searchParams.get('country') || '';
+  const genre = searchParams.get('genre') || '';
   
-  
+  const filteredCountries = countries.filter(country => {
+  const countryName = country.english_name || '';
+  const searchText = countrySearch || '';
+
+  return countryName.toLowerCase().includes(searchText.toLowerCase());
+});
+
+  const [titleValue, setTitleValue] = useState('');
+ 
+  // errorMessage — текст ошибки.
+  const [errorMessage, setErrorMessage] = useState(null); // тільки одне джерело помилки
+
+  // isModalOpen — открыто ли модальное окно.
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [isCountryListOpen, setIsCountryListOpen] = useState(false);
+    
   const location = useLocation();
 
+  const [genres, setGenres] = useState([]);
+  const [genreValue, setGenreValue] = useState('');
+
+  // useEffect для поиска по названию
+  
    useEffect(() => {
-    if (!query) return;
-
-
+        if (!query) return;
+   
     searchMovies(query)
+   
       .then(({ data }) => {
+        
         if (data.results.length === 0) {
           setErrorMessage('No movies found. Try another query.');
           setMovies([]); 
+           setIsModalOpen(false);
         } else {
-          setMovies(data.results);
-          setErrorMessage(null);
+              setMovies(data.results);
+              setTotalResults(data.total_results);
+              setTotalPages(data.total_pages);
+              setCurrentPage(data.page);
+              setErrorMessage(null);
+              setIsModalOpen(true);
+         
         }
       })
       .catch(err => {
-        setErrorMessage('Сталася помилка під час пошуку. Спробуйте пізніше.');
+        setErrorMessage('An error occurred while searching. Please try again later.');
         console.error('Error searching movies:', err.message);
         setMovies([]);
+        setIsModalOpen(false);
       });
   }, [query]);
 
+  // useEffect для поиска по СТРАНЕ и жанру
+  
+   useEffect(() => {
+    
+       if (!country && !genre) return;
+         getMoviesByFilters({
+           countryCode: country,
+            genreId: genre,
+          })
+   
+      .then(({ data }) => {
+               if (data.results.length === 0) {
+          setErrorMessage('No movies found. Try another query.');
+          setMovies([]); 
+           setIsModalOpen(false);
+        } else {
+            
+              // setMovies(previousMovies => [...previousMovies, ...data.results]);
+              setMovies(data.results);
+              setTotalResults(data.total_results);
+              setTotalPages(data.total_pages);
+              setCurrentPage(data.page);
+              setErrorMessage(null);
+              setIsModalOpen(true);
+         
+        }
+      })
+      .catch(err => {
+        setErrorMessage('An error occurred while searching. Please try again later.');
+        console.error('Error searching movies:', err.message);
+        setMovies([]);
+        setIsModalOpen(false);
+      });
+  }, [country, genre]);
 
-   const handleSubmit = e => {
-    e.preventDefault();
-         const inputValue = e.target.elements.search.value.trim();
+  // Загрузка списка стран
+  useEffect(() => {
+  getCountries()
+    .then(({ data }) => {
+       setCountries(data);
+    })
+    .catch(error => {
+      console.error('Error loading countries:', error.message);
+    });
+}, []);
 
+useEffect(() => {
+  getGenres()
+    .then(({ data }) => {
+      setGenres(data.genres);
+    })
+    .catch(error => {
+      console.error('Error loading genres:', error.message);
+    });
+}, []);
+// Эта функция запускается, когда пользователь нажимает кнопку Search или Enter в поле поиска.
 
-    if (inputValue) {
-      setSearchParams({ query: inputValue });
-    }
-  };
+  const handleTitleSubmit = e => {
+     e.preventDefault();
+     console.log('Нажата кнопка Title Search');
+  const trimmedQuery = titleValue.trim();
+setCountrySearch('');
+setGenreValue('');
+setIsCountryListOpen(false);
+  if (trimmedQuery) {
+    setSearchParams({ query: trimmedQuery });
+  }
+  if (trimmedQuery === query && movies.length > 0) {
+  setIsModalOpen(true);
+  return;
+}
+};
+
+  const handleCountrySubmit = e => {
+  e.preventDefault();
+
+    const countryName = countrySearch.trim();
+
+  let countryCode = '';
+
+if (countryName) {
+  const selectedCountry = countries.find(
+    country => country.english_name === countryName
+  );
+
+    if (!selectedCountry) {
+    setErrorMessage('Please select a country from the list.');
+    return;
+  }
+   countryCode = selectedCountry.iso_3166_1;
+}
+
+if (!countryCode && !genreValue) {
+  setErrorMessage('Please select a country or genre.');
+  return;
+}
+
+const params = {};
+
+  if (countryCode) {
+    params.country = countryCode;
+  }
+
+  if (genreValue) {
+    params.genre = genreValue;
+  }
+
+ if (countryCode === country && genreValue === genre && movies.length > 0) {
+    setIsModalOpen(true);
+     return;
+  }
+  setIsCountryListOpen(false);
+  console.log('FILTER submit', params);
+  setTitleValue('');
+   setSearchParams(params);
+
+ };
+ 
+const handleSeeMore = () => {
+  const nextPage = currentPage + 1;
+
+  if (query) {
+    searchMovies(query, nextPage)
+      .then(({ data }) => {
+        setMovies(previousMovies => [...previousMovies, ...data.results]);
+        setCurrentPage(data.page);
+      })
+      .catch(error => {
+        console.error('Error loading more movies:', error.message);
+      });
+
+    return;
+  }
+
+  if (country || genre) {
+    getMoviesByFilters({
+      countryCode: country,
+      genreId: genre,
+      page: nextPage,
+    })
+      .then(({ data }) => {
+        setMovies(previousMovies => [...previousMovies, ...data.results]);
+        setCurrentPage(data.page);
+      })
+      .catch(error => {
+        console.error('Error loading more movies:', error.message);
+      });
+  }
+};
+
+// Сброс для Title
+const handleTitleClear = () => {
+  setMovies([]);
+  setErrorMessage(null);
+  setTitleValue('');
+  setSearchParams({});
+  setIsModalOpen(false);
+};
+
+// Сброс для Country
+const handleCountryClear = () => {
+  setMovies([]);
+  setErrorMessage(null);
+  setCountrySearch('');
+  setSearchParams({});
+  setIsModalOpen(false);
+  setIsCountryListOpen(false);
+  setGenreValue('');
+};
+
 
   return (
-    <div>
-      <h1 className={css.titleSearch }>Search Movies</h1>
-      <form onSubmit={handleSubmit}  className={css.formSearch}>
-        <input
-          className={css.inputSearch}
-          type="text"
-          name="search"
-          defaultValue={query}
-          placeholder="Enter the movie title..." />
-        <button className={ css.btnSearch}type="submit">Search</button>
-      </form>
-{errorMessage && <NotFoundPage message={errorMessage} />}
-      {movies.length > 0 && <MovieList movies={movies} location={location} />}
+    <div className='mx-10 mb-10'>
+      <h1 className='mb-10'>Search Movies</h1>
+       <hr className="my-6 border-blue-900" />
+
+{/* Search Tittle */}
+
+       <TitleSearchForm
+          titleValue={titleValue}
+          setTitleValue={setTitleValue}
+          handleTitleSubmit={handleTitleSubmit}
+          handleTitleClear={handleTitleClear}
+        />
+
+      <hr className="my-6 border-blue-900" />
+
+{/* Search Production countries */}
+     
+        <CountrySearchForm
+          countrySearch={countrySearch}
+          setCountrySearch={setCountrySearch}
+          filteredCountries={filteredCountries}
+          isCountryListOpen={isCountryListOpen}
+          setIsCountryListOpen={setIsCountryListOpen}
+          handleCountrySubmit={handleCountrySubmit}
+          handleCountryClear={handleCountryClear}
+          genres={genres}
+          genreValue={genreValue}
+          setGenreValue={setGenreValue}
+        />
+
+      {errorMessage && <NotFoundPage message={errorMessage} />}
+
+        {isModalOpen && movies.length > 0 && (
+          <MoviesModal  movies={movies}
+                        location={location}
+                         totalResults={totalResults}
+                        totalPages={totalPages}
+                        currentPage={currentPage}
+                        onSeeMore={handleSeeMore} 
+                         onClose={() => setIsModalOpen(false)}
+                        />
+                        
+        )}
+     
     </div>
   );
 };
