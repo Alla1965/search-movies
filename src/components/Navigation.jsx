@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
-import css from './Navigation.module.css'; 
 
-const getActiveClass = ({ isActive }) => clsx(css.link, isActive && css.active);
+const getActiveClass = ({ isActive }) => clsx('flex text-2xl no-underline font-bold text-[#334e68] gap-x-10', 
+                         isActive && '!text-[#f59e0b] !underline');
 
 const Navigation = () => {
   return (

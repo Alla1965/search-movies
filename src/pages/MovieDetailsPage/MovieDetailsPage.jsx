@@ -18,7 +18,6 @@ const MovieDetailsPage = () => {
 
 
 
-
 const languageName = movie
   ? new Intl.DisplayNames(['en'], { type: 'language' }).of(movie.original_language)
   : '';
@@ -35,11 +34,12 @@ const languageName = movie
     }, [movieId]);
     
       
-  if (!movie) return <p>Завантаження...</p>;
+  if (!movie) return <p className='text-base md:text-lg xl:text-xl px-4'>
+    Loading...</p>;
 
   return (
     <>
-      {/* <Link to={backLinkRef.current} className={css.btnBack}> */}
+   
       <Link to={backLinkRef.current} 
             className='inline-flex items-center text-center gap-2 py-2.5 px-4 mb-6
                  text-black bg-white rounded-lg
@@ -61,7 +61,7 @@ const languageName = movie
 
               {movie.title}({movie.release_date.slice(0, 4)})</h1>
 
-              <div className='flex gap-2 mb-2'>
+              <div className='flex items-center gap-2 mb-2'>
                <h2  >Рейтинг: </h2>
                <p>{(movie.vote_average * 10).toFixed(2)}%</p>
               </div>
