@@ -40,7 +40,7 @@ const MovieList = ({ movies,
      )}
 
     <ul className='text-base  gap-8 p-8
-                   grid justify-center md:grid-cols-2 xl:grid-cols-4'>
+                   grid justify-center md:grid-cols-4 xl:grid-cols-6'>
       
       {movies.map(({ id, title, poster_path, vote_average, vote_count, release_date, original_title }) => (
         <li className='flex flex-col gap-2 justify-start  m-0'  

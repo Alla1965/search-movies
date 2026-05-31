@@ -51,7 +51,7 @@ console.log('backLinkRef',backLinkRef);
 
    
        <div className='flex flex-col md:flex-row gap-6 mx-10 text-base  mb-4'>
-          <img className='w-full h-auto'
+          <img className='w-full max-h-[70vh] object-contain md:w-[300px] md:max-h-[80vh] h-auto'
                src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
                alt={movie.title}
                />
