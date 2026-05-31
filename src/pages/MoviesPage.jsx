@@ -1,21 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
-import { searchMovies } from '../../services/tmdbAPI';
-import { getCountries } from '../../services/tmdbAPI';
-import MovieList from '../../components/MovieList';
-import NotFoundPage from '../NotFoundPage/NotFoundPage';
-import MoviesModal from '../../components/MoviesModal';
-import TitleSearchForm from '../../components/TitleSearchForm';
-import CountrySearchForm from '../../components/CountrySearchForm'
-import { getMoviesByFilters } from '../../services/tmdbAPI';
-import { getGenres } from '../../services/tmdbAPI';
+
+import { searchMovies } from '../services/tmdbAPI';
+import { getCountries } from '../services/tmdbAPI';
+import { getGenres } from '../services/tmdbAPI';
+import { getMoviesByFilters } from '../services/tmdbAPI';
+
+import NotFoundPage from '../pages/NotFoundPage';
+
+import MoviesModal from '../components/MoviesModal';
+import TitleSearchForm from '../components/TitleSearchForm';
+import CountrySearchForm from '../components/CountrySearchForm'
 
 const MoviesPage = () => {
 
 // movies — список найденных фильмов.
   const [movies, setMovies] = useState([]);
+   
   const [countries, setCountries] = useState([]);
-  const [countrySearch, setCountrySearch] = useState('');
+
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,19 +26,15 @@ const MoviesPage = () => {
   const query = searchParams.get('query') || '';
   const country = searchParams.get('country') || '';
   const genre = searchParams.get('genre') || '';
-  const filteredCountries = countries.filter(country => {
-  const countryName = country.english_name || '';
-  const searchText = countrySearch || '';
-
-  return countryName.toLowerCase().includes(searchText.toLowerCase());});
-
+ 
   const [titleValue, setTitleValue] = useState('');
   const [errorMessage, setErrorMessage] = useState(null); // тільки одне джерело помилки
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCountryListOpen, setIsCountryListOpen] = useState(false);
   const location = useLocation();
   const [genres, setGenres] = useState([]);
   const [genreValue, setGenreValue] = useState('');
+  const [countryValue, setCountryValue] = useState("");
+  const [sortBy, setSortBy] = useState('vote_average.desc');
 
   // useEffect для поиска по названию
   
@@ -76,6 +75,7 @@ const MoviesPage = () => {
          getMoviesByFilters({
            countryCode: country,
             genreId: genre,
+            sortBy: sortBy,
           })
    
       .then(({ data }) => {
@@ -85,7 +85,6 @@ const MoviesPage = () => {
            setIsModalOpen(false);
         } else {
             
-              // setMovies(previousMovies => [...previousMovies, ...data.results]);
               setMovies(data.results);
               setTotalResults(data.total_results);
               setTotalPages(data.total_pages);
@@ -101,13 +100,13 @@ const MoviesPage = () => {
         setMovies([]);
         setIsModalOpen(false);
       });
-  }, [country, genre]);
+  }, [country, genre, sortBy]);
 
   // Загрузка списка стран
     useEffect(() => {
-     getCountries()
+       getCountries()
     .then(({ data }) => {
-       setCountries(data);
+              setCountries(data);
     })
     .catch(error => {
       console.error('Error loading countries:', error.message);
@@ -129,10 +128,8 @@ const MoviesPage = () => {
     const handleTitleSubmit = e => {
      e.preventDefault();
       const trimmedQuery = titleValue.trim();
-      setCountrySearch('');
-      setGenreValue('');
-      setIsCountryListOpen(false);
-
+           setGenreValue('');
+      
       if (trimmedQuery) {
          setSearchParams({ query: trimmedQuery });
       }
@@ -146,30 +143,16 @@ const MoviesPage = () => {
     const handleCountrySubmit = e => {
          e.preventDefault();
 
-         const countryName = countrySearch.trim();
+         const countryCode = countryValue.trim();
 
-         let countryCode = '';
-
-         if (countryName) {
-           const selectedCountry = countries.find(
-             country => country.english_name === countryName
-           );
-
-            if (!selectedCountry) {
-            setErrorMessage('Please select a country from the list.');
-            return;
-          }
-         countryCode = selectedCountry.iso_3166_1;
-         }
-
+        
          if (!countryCode && !genreValue) {
            setErrorMessage('Please select a country or genre.');
            return;
          }
 
          const params = {};
-
-                  if (countryCode) {
+           if (countryCode) {
             params.country = countryCode;
           }
 
@@ -182,14 +165,13 @@ const MoviesPage = () => {
               return;
            }
 
-          setIsCountryListOpen(false);
           setTitleValue('');
           setSearchParams(params);
 
      };
  
-const handleSeeMore = () => {
-  const nextPage = currentPage + 1;
+    const handleSeeMore = () => {
+    const nextPage = currentPage + 1;
 
    if (query) {
      searchMovies(query, nextPage)
@@ -209,6 +191,7 @@ const handleSeeMore = () => {
       countryCode: country,
       genreId: genre,
       page: nextPage,
+      sortBy,
     })
       .then(({ data }) => {
         setMovies(previousMovies => [...previousMovies, ...data.results]);
@@ -233,11 +216,10 @@ const handleTitleClear = () => {
 const handleCountryClear = () => {
   setMovies([]);
   setErrorMessage(null);
-  setCountrySearch('');
+  setCountryValue("");
   setSearchParams({});
   setIsModalOpen(false);
-  setIsCountryListOpen(false);
-  setGenreValue('');
+   setGenreValue('');
 };
 
   return (
@@ -259,16 +241,14 @@ const handleCountryClear = () => {
 {/* Search Production countries */}
      
         <CountrySearchForm
-          countrySearch={countrySearch}
-          setCountrySearch={setCountrySearch}
-          filteredCountries={filteredCountries}
-          isCountryListOpen={isCountryListOpen}
-          setIsCountryListOpen={setIsCountryListOpen}
+          countryValue={countryValue}
+          setCountryValue={setCountryValue}
           handleCountrySubmit={handleCountrySubmit}
           handleCountryClear={handleCountryClear}
           genres={genres}
           genreValue={genreValue}
           setGenreValue={setGenreValue}
+          countries={countries}
         />
 
       {errorMessage && <NotFoundPage message={errorMessage} />}
@@ -276,11 +256,13 @@ const handleCountryClear = () => {
         {isModalOpen && movies.length > 0 && (
           <MoviesModal  movies={movies}
                         location={location}
-                         totalResults={totalResults}
+                        totalResults={totalResults}
                         totalPages={totalPages}
                         currentPage={currentPage}
                         onSeeMore={handleSeeMore} 
-                         onClose={() => setIsModalOpen(false)}
+                        onClose={() => setIsModalOpen(false)}
+                        sortBy={sortBy}
+                        onSortChange={setSortBy}
           />              
         )}
      

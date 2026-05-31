@@ -6,6 +6,7 @@ const options = {
     Authorization: `Bearer ${import.meta.env.VITE_TMDB_BEARER_TOKEN}`,
   },
 };
+
 export const getMoviesByCountry = countryCode =>
   axios.get(`${BASE_URL}/discover/movie?with_origin_country=${countryCode}`, options);
 
@@ -30,11 +31,13 @@ export const getMovieCredits = id =>
 export const getMovieReviews = id =>
    axios.get(`${BASE_URL}/movie/${id}/reviews`, options);
 
+// Запрос жанров
 export const getGenres = () =>
   axios.get(`${BASE_URL}/genre/movie/list`, options);
 
+// Запрос по выбраной стане и жанру с сортировкой рейтинга по убыванию
 
-export const getMoviesByFilters = ({ countryCode, genreId, page = 1 }) => {
+export const getMoviesByFilters = ({ countryCode,   sortBy = 'vote_average.desc', genreId, page = 1 }) => {
   const params = new URLSearchParams();
 
   if (countryCode) {
@@ -44,7 +47,17 @@ export const getMoviesByFilters = ({ countryCode, genreId, page = 1 }) => {
   if (genreId) {
     params.append('with_genres', genreId);
   }
-  params.append('page', page);
+     params.append('sort_by', sortBy);
+     params.append('vote_count.gte', '3');
+     params.append('page', page);
 
   return axios.get(`${BASE_URL}/discover/movie?${params.toString()}`, options);
 };
+
+// Запрос актеров
+export const getPersonMovieCredits = personId =>
+  axios.get(`${BASE_URL}/person/${personId}/movie_credits`, options);
+
+
+export const getPersonDetails = personId =>
+  axios.get(`${BASE_URL}/person/${personId}`, options);

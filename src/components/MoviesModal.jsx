@@ -6,7 +6,9 @@
            totalResults,
            totalPages,
            currentPage, 
-          onSeeMore, }) => {
+           onSeeMore,
+           sortBy,
+           onSortChange,}) => {
   return (
          <div className="fixed inset-0 flex justify-center items-center bg-black/70 p-8"
               onClick={onClose}>
@@ -26,6 +28,8 @@
              totalPages={totalPages}
              currentPage={currentPage}
              onSeeMore={onSeeMore}
+             sortBy={sortBy}
+             onSortChange={onSortChange}
              />
            </div>
            

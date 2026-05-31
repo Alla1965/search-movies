@@ -1,73 +1,80 @@
 const CountrySearchForm = ({
-   countrySearch,
-   setCountrySearch,
-   filteredCountries,
-   isCountryListOpen,
-   setIsCountryListOpen,
+   countryValue,
+   setCountryValue,
    handleCountrySubmit,
    handleCountryClear,
    genres,
    genreValue,
    setGenreValue,
-}) => {return (
+   countries
+}) => {
+  console.log('countryValue:', countryValue);
+
+  return (
+  
+
       <div className='flex flex-col gap-4'>
-        <p className='font-bold pl-2 text-base md:text-lg xl:text-2xl'> Country </p>
+        
 
       <form onSubmit={handleCountrySubmit}  
             className='flex flex-col md:flex-row gap-3 items-center pl-2 w-full'>
-                 
-         <div className="relative w-full">   
+           
+         <div className="flex gap-6 w-full">
 
-          <input
-            value={countrySearch}
-            onChange={e => {
-                   setCountrySearch(e.target.value);
-                   setIsCountryListOpen(true); }}
-            placeholder="Start typing country..."
-            className='h-10 w-full bg-white text-xl border pl-5 rounded'
-          />
+            <div className="w-full flex-1"> 
 
-          {isCountryListOpen &&countrySearch && filteredCountries.length > 0 && (
-            <ul className="absolute left-0 top-full z-20 mt-1 max-h-60 w-full overflow-y-auto rounded border border-gray-300 bg-white shadow-lg">
-                {filteredCountries.map(country => (
-                 <li
-                 key={country.iso_3166_1}
-                 className="cursor-pointer px-4 py-2 hover:bg-blue-100"
-                 onClick={() => {
-                    setCountrySearch(country.english_name);
-                    setIsCountryListOpen(false);}} >
-                     {country.english_name}
-                 </li>
-        ))}
-           </ul>
-          )}
-
-         </div>  
-          <select
-  value={genreValue}
-  onChange={e => setGenreValue(e.target.value)}
-  className="h-10 w-full bg-white text-xl border pl-5 rounded"
->
-  <option value="">Select genre</option>
-
-  {genres.map(genre => (
-    <option key={genre.id} value={genre.id}>
-      {genre.name}
+               <p className='font-bold pl-2 text-base md:text-lg xl:text-2xl mb-2'> Country </p>  
+               
+                     <select  value={countryValue}
+                             onChange={e => setCountryValue(e.target.value)}
+                             className="h-10 w-full bg-white text-xl border pl-5 rounded"
+                         >
+                          <option value="">Select country</option>
+                         
+                            {[...countries]
+  .sort((a, b) => a.english_name.localeCompare(b.english_name))
+  .map(country => (
+    <option key={country.iso_3166_1} value={country.iso_3166_1}>
+      {country.english_name}
     </option>
   ))}
-</select>
+                     </select>
+   
+            </div>  
 
-        <button className='text-base h-10 bg-[#f59e0b]
+            <div className='flex-1 w-full bg-white text-xl  pl-5 rounded gap-4'>
+               <p className='font-bold pl-2 text-base md:text-lg xl:text-2xl mb-2'>Genre</p>
+
+                 <select
+                    value={genreValue}
+                    onChange={e => setGenreValue(e.target.value)}
+                    className="h-10 w-full bg-white text-xl border pl-5 rounded "
+                  >
+ 
+                   <option 
+                     value="">Select genre</option>
+                       {genres.map(genre => (
+                       <option key={genre.id} value={genre.id}>
+                       {genre.name}
+                    </option>
+
+                   ))}
+                </select>
+
+            </div>
+
+         </div>
+
+             <button className='self-end text-base h-10 bg-[#f59e0b]
                           !border w-40 !border-black' 
-                type="submit"> Search
-        </button>
+                     type="submit"> Search
+              </button>
 
-        <button 
-           className='text-base h-10 bg-blue-200 !border !border-black w-40'
-           type="button" 
-           onClick={handleCountryClear}>
-             Clear
-        </button>
+              <button className='self-end text-base h-10 bg-blue-200 !border !border-black w-40'
+                       type="button" 
+                       onClick={handleCountryClear}>
+                         Clear
+              </button>
 
       </form>
 
