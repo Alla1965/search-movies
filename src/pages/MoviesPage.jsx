@@ -1,24 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
-
-import { searchMovies } from '../services/tmdbAPI';
-import { getCountries } from '../services/tmdbAPI';
-import { getGenres } from '../services/tmdbAPI';
-import { getMoviesByFilters } from '../services/tmdbAPI';
-
+import { useSearchParams } from 'react-router-dom';
+import { searchMovies, getCountries, getGenres, getMoviesByFilters} from '../services/tmdbAPI';
 import NotFoundPage from '../pages/NotFoundPage';
-
-import MoviesModal from '../components/MoviesModal';
+import MovieList from '../components/MovieList';
 import TitleSearchForm from '../components/TitleSearchForm';
 import CountrySearchForm from '../components/CountrySearchForm'
 
-const MoviesPage = () => {
+const MoviesPage = ({ isDark,  t, language}) => {
+  
 
-// movies — список найденных фильмов.
-  const [movies, setMovies] = useState([]);
-   
+  const [movies, setMovies] = useState([]);// movies — список найденных фильмов.
   const [countries, setCountries] = useState([]);
-
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,11 +18,8 @@ const MoviesPage = () => {
   const query = searchParams.get('query') || '';
   const country = searchParams.get('country') || '';
   const genre = searchParams.get('genre') || '';
- 
   const [titleValue, setTitleValue] = useState('');
   const [errorMessage, setErrorMessage] = useState(null); // тільки одне джерело помилки
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const location = useLocation();
   const [genres, setGenres] = useState([]);
   const [genreValue, setGenreValue] = useState('');
   const [countryValue, setCountryValue] = useState("");
@@ -41,31 +30,46 @@ const MoviesPage = () => {
    useEffect(() => {
         if (!query) return;
    
-    searchMovies(query)
+       searchMovies(query)
    
       .then(({ data }) => {
         
-        if (data.results.length === 0) {
-          setErrorMessage('No movies found. Try another query.');
-          setMovies([]); 
-           setIsModalOpen(false);
-        } else {
-              setMovies(data.results);
-              setTotalResults(data.total_results);
-              setTotalPages(data.total_pages);
-              setCurrentPage(data.page);
-              setErrorMessage(null);
-              setIsModalOpen(true);
+      if (data.results.length === 0) {
+              setErrorMessage('No movies found. Try another query.');
+              setMovies([]); 
+            } else {
+                  let sortedResults = [...data.results];
+
+           if (sortBy === "vote_average.desc") {         
+             sortedResults.sort((a, b) => b.vote_average - a.vote_average);
+             }
+
+             if (sortBy === "vote_average.asc") {         
+             sortedResults.sort((a, b) => a.vote_average - b.vote_average);
+             }
+
+            if (sortBy === "primary_release_date.desc") {         
+              sortedResults.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+             }
+
+             if (sortBy === "primary_release_date.asc") {
+              sortedResults.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
+             }
+              
+                 setMovies(sortedResults);
+                 setTotalResults(data.total_results);
+                 setTotalPages(data.total_pages);
+                  setCurrentPage(data.page);
+                  setErrorMessage(null);
          
-        }
-      })
+            }
+          })
       .catch(err => {
-        setErrorMessage('An error occurred while searching. Please try again later.');
-        console.error('Error searching movies:', err.message);
-        setMovies([]);
-        setIsModalOpen(false);
-      });
-  }, [query]);
+                 setErrorMessage('An error occurred while searching. Please try again later.');
+                 console.error('Error searching movies:', err.message);
+                 setMovies([]);
+               });
+     }, [query, sortBy]);
 
   // useEffect для поиска по СТРАНЕ и жанру
   
@@ -79,10 +83,9 @@ const MoviesPage = () => {
           })
    
       .then(({ data }) => {
-               if (data.results.length === 0) {
+         if (data.results.length === 0) {
           setErrorMessage('No movies found. Try another query.');
           setMovies([]); 
-           setIsModalOpen(false);
         } else {
             
               setMovies(data.results);
@@ -90,7 +93,7 @@ const MoviesPage = () => {
               setTotalPages(data.total_pages);
               setCurrentPage(data.page);
               setErrorMessage(null);
-              setIsModalOpen(true);
+              // setIsModalOpen(true);
          
         }
       })
@@ -98,9 +101,9 @@ const MoviesPage = () => {
         setErrorMessage('An error occurred while searching. Please try again later.');
         console.error('Error searching movies:', err.message);
         setMovies([]);
-        setIsModalOpen(false);
+        // setIsModalOpen(false);
       });
-  }, [country, genre, sortBy]);
+    }, [country, genre, sortBy]);
 
   // Загрузка списка стран
     useEffect(() => {
@@ -115,28 +118,29 @@ const MoviesPage = () => {
 
 // Загрузка жанров
    useEffect(() => {
-     getGenres()
+     getGenres(language)
     .then(({ data }) => {
       setGenres(data.genres);
     })
     .catch(error => {
       console.error('Error loading genres:', error.message);
     });
-}, []);
+   }, [language]);
 
 // Эта функция запускается, когда пользователь нажимает кнопку Search или Enter в поле поиска.
+
     const handleTitleSubmit = e => {
-     e.preventDefault();
+      e.preventDefault();
       const trimmedQuery = titleValue.trim();
            setGenreValue('');
+           setCountryValue('');
       
       if (trimmedQuery) {
          setSearchParams({ query: trimmedQuery });
       }
 
       if (trimmedQuery === query && movies.length > 0) {
-         setIsModalOpen(true);
-      return;
+          return;
      }
      };
 
@@ -161,7 +165,7 @@ const MoviesPage = () => {
           }
 
           if (countryCode === country && genreValue === genre && movies.length > 0) {
-             setIsModalOpen(true);
+            //  setIsModalOpen(true);
               return;
            }
 
@@ -209,7 +213,9 @@ const handleTitleClear = () => {
   setErrorMessage(null);
   setTitleValue('');
   setSearchParams({});
-  setIsModalOpen(false);
+  setTotalResults(0);
+  setTotalPages(0);
+  setCurrentPage(1);
 };
 
 // Сброс для Country
@@ -218,28 +224,36 @@ const handleCountryClear = () => {
   setErrorMessage(null);
   setCountryValue("");
   setSearchParams({});
-  setIsModalOpen(false);
-   setGenreValue('');
+  setGenreValue('');
+  setTotalResults(0);
+  setTotalPages(0);
+  setCurrentPage(1);
 };
 
   return (
     <div className='mx-10 mb-10'>
-      <h1 className='mb-10'>Search Movies</h1>
-       <hr className="my-6 border-blue-900" />
+      <h1 className='my-10'>{t.searchMovies}</h1>
+     
 
-{/* Search Tittle */}
-
+      {/* Search Title */}
+      <div className={`mx-auto my-8 rounded-xl p-6 shadow-lg border
+        ${isDark ? "bg-card-dark border-white/10" : "bg-card-light border-border-light" } `}>
+         
        <TitleSearchForm
           titleValue={titleValue}
           setTitleValue={setTitleValue}
           handleTitleSubmit={handleTitleSubmit}
           handleTitleClear={handleTitleClear}
+          isDark={isDark}
+          t={t}
         />
+      </div>
+      
 
-      <hr className="my-6 border-blue-900" />
-
-{/* Search Production countries */}
-     
+      {/* Search Production countries */}
+      <div className={` mx-auto my-8 rounded-xl p-6 shadow-lg border mb-10
+       ${isDark ? "bg-card-dark border-white/10"
+        : "bg-card-light border-border-light" } `}>
         <CountrySearchForm
           countryValue={countryValue}
           setCountryValue={setCountryValue}
@@ -249,23 +263,29 @@ const handleCountryClear = () => {
           genreValue={genreValue}
           setGenreValue={setGenreValue}
           countries={countries}
+          isDark={isDark}
+            t={t}
+            language={language }
         />
 
       {errorMessage && <NotFoundPage message={errorMessage} />}
-
-        {isModalOpen && movies.length > 0 && (
-          <MoviesModal  movies={movies}
-                        location={location}
-                        totalResults={totalResults}
-                        totalPages={totalPages}
-                        currentPage={currentPage}
-                        onSeeMore={handleSeeMore} 
-                        onClose={() => setIsModalOpen(false)}
-                        sortBy={sortBy}
-                        onSortChange={setSortBy}
-          />              
-        )}
+   
+  
      
+      </div>
+
+      <MovieList 
+              movies={movies}
+              totalResults={totalResults}
+              totalPages={totalPages}
+              currentPage={currentPage}
+              onSeeMore={handleSeeMore}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              isDark={isDark}
+                t={t}
+             />
+
     </div>
   );
 };

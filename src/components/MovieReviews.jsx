@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom';
 
 import { getMovieReviews } from '../services/tmdbAPI';
 
-const MovieReviews = () => {
+const MovieReviews = ({isDark}) => {
   const { movieId } = useParams();
+ 
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {

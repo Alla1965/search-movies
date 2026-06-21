@@ -7,6 +7,10 @@ const options = {
   },
 };
 
+//Запрос популярных фильмов
+export const fetchTrendingMovies = () =>
+  axios.get(`${BASE_URL}/trending/movie/day`, options);
+
 export const getMoviesByCountry = countryCode =>
   axios.get(`${BASE_URL}/discover/movie?with_origin_country=${countryCode}`, options);
 
@@ -14,16 +18,29 @@ export const getMoviesByCountry = countryCode =>
 export const getCountries = () =>
   axios.get(`${BASE_URL}/configuration/countries`, options);
 
-export const fetchTrendingMovies = () =>
-  axios.get(`${BASE_URL}/trending/movie/day`, options);
 
 export const searchMovies = (query, page = 1) =>
   axios.get(`${BASE_URL}/search/movie?query=${query}&page=${page}`, options);
 
-export const getMovieDetails = id =>
-   axios.get(`${BASE_URL}/movie/${id}`, options);
+export const searchActors = (actor, page = 1) =>
+  axios.get(`${BASE_URL}/search/person?query=${encodeURIComponent(actor)}&page=${page}`, options);
 
+export const getMovieDetails = (movieId, language = "en") => {
+  const apiLanguage = language === "uk" ? "uk-UA" : "en-US";
 
+  return axios.get(
+    `${BASE_URL}/movie/${movieId}?language=${apiLanguage}`,
+    options
+  );
+};
+
+export const getPersonDetails  = (personId, language = "en") => {
+    const apiLanguage = language === "uk" ? "uk-UA" : "en-US";
+    return axios.get(
+  `${BASE_URL}/person/${personId}?language=${apiLanguage}`,
+  options
+);
+};
 
 export const getMovieCredits = id =>
     axios.get(`${BASE_URL}/movie/${id}/credits`, options);
@@ -32,8 +49,9 @@ export const getMovieReviews = id =>
    axios.get(`${BASE_URL}/movie/${id}/reviews`, options);
 
 // Запрос жанров
-export const getGenres = () =>
-  axios.get(`${BASE_URL}/genre/movie/list`, options);
+export const getGenres = (language = "en") =>{
+   const apiLanguage = language === "uk" ? "uk-UA" : "en-US";
+return  axios.get(`${BASE_URL}/genre/movie/list?language=${apiLanguage}`, options);};
 
 // Запрос по выбраной стане и жанру с сортировкой рейтинга по убыванию
 
@@ -48,7 +66,7 @@ export const getMoviesByFilters = ({ countryCode,   sortBy = 'vote_average.desc'
     params.append('with_genres', genreId);
   }
      params.append('sort_by', sortBy);
-     params.append('vote_count.gte', '3');
+    //  params.append('vote_count.gte', '1');
      params.append('page', page);
 
   return axios.get(`${BASE_URL}/discover/movie?${params.toString()}`, options);
@@ -59,5 +77,3 @@ export const getPersonMovieCredits = personId =>
   axios.get(`${BASE_URL}/person/${personId}/movie_credits`, options);
 
 
-export const getPersonDetails = personId =>
-  axios.get(`${BASE_URL}/person/${personId}`, options);

@@ -8,8 +8,10 @@
            currentPage, 
            onSeeMore,
            sortBy,
-           onSortChange,}) => {
-  return (
+           onSortChange,
+          isDark,}) => {
+                       
+    return (
          <div className="fixed inset-0 flex justify-center items-center bg-black/70 p-8"
               onClick={onClose}>
            <div className="bg-white w-full max-h-[80vh]
@@ -30,6 +32,7 @@
              onSeeMore={onSeeMore}
              sortBy={sortBy}
              onSortChange={onSortChange}
+             isDark={isDark}
              />
            </div>
            
