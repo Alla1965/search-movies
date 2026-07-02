@@ -50,8 +50,7 @@ const CountrySearchForm = ({
                                {countryNames.of(country.iso_3166_1)}
                              </option>
                            ))}
-                            
-                             
+                         
                 </select>
    
             </div>  

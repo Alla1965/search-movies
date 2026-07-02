@@ -24,7 +24,6 @@ const CastSearchPage = ({ isDark,  t}) => {
          .then(({ data }) => {
         
             setActors(data.results);
-             console.log("all actors:", data.results);
            if (data.results.length === 0) {
              setErrorMessage('No actors found. Try another query.');
              setActors([]); 
@@ -59,9 +58,7 @@ const CastSearchPage = ({ isDark,  t}) => {
       });
   }
     };
-     
 
-// Эта функция запускается, когда пользователь нажимает кнопку Search или Enter в поле поиска.
     const handleActorSubmit = e => {
       e.preventDefault();
       const trimmedQuery = actorValue.trim();

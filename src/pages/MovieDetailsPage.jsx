@@ -5,8 +5,8 @@ import { useParams, useLocation, Outlet, Link } from 'react-router-dom';
 
   const MovieDetailsPage = ({ isDark, t,  language }) => {
   const { movieId } = useParams();
-  const location = useLocation();//сохраняет текущий адрес
-  const backLinkRef = useRef(location.state?.from ?? '/');// useRef для збереження попереднього місця переходу
+  const location = useLocation();
+  const backLinkRef = useRef(location.state?.from ?? '/');
   const [movie, setMovie] = useState(null);
   const [isEnglishFallback, setIsEnglishFallback] = useState(false);
   

@@ -9,7 +9,7 @@ import CountrySearchForm from '../components/CountrySearchForm'
 const MoviesPage = ({ isDark,  t, language}) => {
   
 
-  const [movies, setMovies] = useState([]);// movies — список найденных фильмов.
+  const [movies, setMovies] = useState([]);
   const [countries, setCountries] = useState([]);
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -19,7 +19,7 @@ const MoviesPage = ({ isDark,  t, language}) => {
   const country = searchParams.get('country') || '';
   const genre = searchParams.get('genre') || '';
   const [titleValue, setTitleValue] = useState('');
-  const [errorMessage, setErrorMessage] = useState(null); // тільки одне джерело помилки
+  const [errorMessage, setErrorMessage] = useState(null); 
   const [genres, setGenres] = useState([]);
   const [genreValue, setGenreValue] = useState('');
   const [countryValue, setCountryValue] = useState("");
@@ -59,8 +59,8 @@ const MoviesPage = ({ isDark,  t, language}) => {
                  setMovies(sortedResults);
                  setTotalResults(data.total_results);
                  setTotalPages(data.total_pages);
-                  setCurrentPage(data.page);
-                  setErrorMessage(null);
+                 setCurrentPage(data.page);
+                 setErrorMessage(null);
          
             }
           })
@@ -116,7 +116,6 @@ const MoviesPage = ({ isDark,  t, language}) => {
     });
     }, []);
 
-// Загрузка жанров
    useEffect(() => {
      getGenres(language)
     .then(({ data }) => {
@@ -127,7 +126,6 @@ const MoviesPage = ({ isDark,  t, language}) => {
     });
    }, [language]);
 
-// Эта функция запускается, когда пользователь нажимает кнопку Search или Enter в поле поиска.
 
     const handleTitleSubmit = e => {
       e.preventDefault();

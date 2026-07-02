@@ -41,7 +41,8 @@ const App = () => {
        t={t}
        />
     <Suspense fallback={<p>Loading...</p>}>
-      
+
+       {/* Загрузка домашней страницы */}
       <Routes>
         <Route path="/" 
               element={<HomePage 
@@ -49,7 +50,8 @@ const App = () => {
               t={t}
         />} 
         />
-
+       
+       {/* Загрузка страницы для поиска фильмов*/}
         <Route path="/movies" 
                element={<MoviesPage 
                isDark={isDark} 
@@ -57,12 +59,13 @@ const App = () => {
                language={language} />}
           /> 
 
-          <Route path="/actors" 
+       {/* Загрузка страницы для поиска актеров*/}
+        <Route path="/actors" 
                 element={<CastSearchPage isDark={isDark} t={t} 
                           language={language} />} />
 
         <Route path="/actor/:actorId/*" element={<ActorDetailsPage isDark={isDark} t={t} language={language} />} >
-             <Route path="movies" element={<PersonMoviesModal isDark={isDark} t={t} />} />
+        <Route path="movies" element={<PersonMoviesModal isDark={isDark} t={t} />} />
         </Route>
 
         <Route path="/movies/:movieId/*" element={<MovieDetailsPage isDark={isDark} t={t} language={language} />} >
